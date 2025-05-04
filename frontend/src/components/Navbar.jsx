@@ -1,0 +1,51 @@
+'use client';
+import Link from 'next/link';
+
+const Navbar = () => {
+  return (
+    <nav className="bg-gray-800 p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        {/* Logo */}
+        <div className="text-white text-2xl font-bold">
+          <Link href="/">My Diabetes Platform</Link>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="hidden md:flex space-x-8 text-white">
+          <Link href="/" className="hover:text-green-400">Home</Link>
+          <Link href="/add-article" className="hover:text-green-400">Add Article</Link>
+          <Link href="/articles" className="hover:text-green-400">Articles</Link>
+          <Link href="/contact" className="hover:text-green-400">Contact</Link>
+          <Link href="/purchase" className="hover:text-green-400">Purchase</Link>
+        </div>
+
+        <div className="hidden md:flex space-x-4">
+          <Link href="/login" className="text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Login</Link>
+          <Link href="/signup" className="text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Signup</Link>
+        </div>
+
+        {/* Mobile Menu Icon Placeholder (optional) */}
+        <div className="md:hidden">
+          <button className="text-white focus:outline-none">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
