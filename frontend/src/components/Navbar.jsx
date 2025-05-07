@@ -1,7 +1,13 @@
 'use client';
 import Link from 'next/link';
+import { useCart } from '@/context/CartContext';  
+import { CartProvider } from "@/context/CartContext";
+
+
 
 const Navbar = () => {
+  const { cartItems } = useCart(); // ✅ Get cart data from context
+
   return (
     <nav className="bg-gray-800 p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -13,18 +19,25 @@ const Navbar = () => {
         {/* Navigation Links */}
         <div className="hidden md:flex space-x-8 text-white">
           <Link href="/" className="hover:text-green-400">Home</Link>
-          <Link href="/add-article" className="hover:text-green-400">Add Article</Link>
-          <Link href="/articles" className="hover:text-green-400">Articles</Link>
+          <Link href="/article-list" className="hover:text-green-400">Articles</Link>
           <Link href="/contact" className="hover:text-green-400">Contact</Link>
           <Link href="/purchase" className="hover:text-green-400">Purchase</Link>
+          <Link href="/cart" className="hover:text-green-400 relative">
+            Cart
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-3 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {cartItems.length}
+              </span>
+            )}
+          </Link>
         </div>
 
+        {/* Auth Buttons */}
         <div className="hidden md:flex space-x-4">
           <Link href="/login" className="text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Login</Link>
           <Link href="/signup" className="text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Signup</Link>
         </div>
 
-        {/* Mobile Menu Icon Placeholder (optional) */}
         <div className="md:hidden">
           <button className="text-white focus:outline-none">
             <svg

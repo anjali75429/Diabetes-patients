@@ -1,54 +1,74 @@
 const express = require('express');
 const router = express.Router();
-const Model = require('../models/equipmentModel');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const Equipment = require('../models/equipmentModel'); // Make sure this model exists
 
-// Add a new article
-router.post('/add', (req, res) => {
-  new Model(req.body)
-    .save()
-    .then(result => res.status(200).json(result))
-    .catch(err => res.status(500).json({ error: err.message }));
+// Get all equipment
+router.get('/getall', async (req, res) => {
+  console.log('GET request for all equipment');
+  try {
+    const equipment = await Equipment.find();
+    res.json(equipment);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
+// Add new equipment
+router.post('/', async (req, res) => {
+  const { name, title, content, category, image, price } = req.body;
 
+  if (!name || !title || !content || !category || !image || price === undefined) {
+    return res.status(400).json({ message: 'All fields are required: name, title, content, category, image, price.' });
+  }
 
-// Get all articles
-router.get('/getall', (req, res) => {
-  Model.find()
-    .then(result => res.status(200).json(result))
-    .catch(err => res.status(500).json({ error: err.message }));
+  try {
+    const newEquipment = new Equipment({
+      name,
+      title,
+      content,
+      category,
+      image,
+      price
+    });
+
+    await newEquipment.save();
+    res.status(201).json(newEquipment);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
-// Get article by ID
-router.get('/getbyid/:id', (req, res) => {
-  Model.findById(req.params.id)
-    .then(user => {
-      if (!user) return res.status(404).json({ message: 'article not found' });
-      res.status(200).json(user);
-    })
-    .catch(err => res.status(500).json({ error: err.message }));
+// Get a single equipment item
+router.get('/:id', async (req, res) => {
+  try {
+    const equipment = await Equipment.findById(req.params.id);
+    if (!equipment) return res.status(404).json({ message: 'Equipment not found' });
+    res.json(equipment);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// Update article by ID
-router.put('/update/:id', (req, res) => {
-  Model.findByIdAndUpdate(req.params.id, req.body, { new: true })
-    .then(updated => {
-      if (!updated) return res.status(404).json({ message: 'article not found' });
-      res.status(200).json(updated);
-    })
-    .catch(err => res.status(500).json({ error: err.message }));
+// Update equipment
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedEquipment = await Equipment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedEquipment) return res.status(404).json({ message: 'Equipment not found' });
+    res.json(updatedEquipment);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 });
 
-// Delete article by ID
-router.delete('/delete/:id', (req, res) => {
-  Model.findByIdAndDelete(req.params.id)
-    .then(deleted => {
-      if (!deleted) return res.status(404).json({ message: 'article not found' });
-      res.status(200).json({ message: 'article deleted successfully', deleted });
-    })
-    .catch(err => res.status(500).json({ error: err.message }));
+// Delete equipment
+router.delete('/:id', async (req, res) => {
+  try {
+    const deletedEquipment = await Equipment.findByIdAndDelete(req.params.id);
+    if (!deletedEquipment) return res.status(404).json({ message: 'Equipment not found' });
+    res.json({ message: 'Equipment deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;
