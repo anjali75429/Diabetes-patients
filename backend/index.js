@@ -20,5 +20,3 @@ app.use('/food', FoodRouter);
 app.use('/user', UserRouter);
 app.use('/article', ArticleRouter);
 // app.use('/api/articles', articleRoutes);
-
-app.listen(port, () => console.log('Server running on port 5000'));
