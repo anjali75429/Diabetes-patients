@@ -6,6 +6,7 @@ const FoodRouter = require('./routers/foodRouter');
 const UserRouter = require('./routers/userRouter');
 const ArticleRouter = require('./routers/articlesRouter');
 const OrderRouter = require('./routers/orderRouter');
+const ContactRouter = require(`./routers/contactRouter`);
 // const something = require('./somefile');
 
 
@@ -21,6 +22,8 @@ app.use('/food', FoodRouter);
 app.use('/user', UserRouter);
 app.use('/article', ArticleRouter);
 app.use('/order', OrderRouter);
+app.use(`/contact`, ContactRouter);
+
 // app.use('/api/articles', articleRoutes);
 
 app.listen(port, () => console.log('Server running on port 5000'));
