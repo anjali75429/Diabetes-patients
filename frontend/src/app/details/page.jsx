@@ -9,7 +9,7 @@ export default function PlatformDetails() {
       <div className="flex flex-col md:flex-row gap-10 items-center">
         <div className="md:w-1/2">
           <Image
-            src="/images/diabetes-platform.jpg" // Replace with your actual image path
+            src="/https://www.istockphoto.com/photo/healthy-lifestyle-on-ketogenic-diet-eating-clean-keto-food-good-health-dietary-in-gm1363588189-435090679" // Replace with your actual image path
             alt="Diabetes management tools"
             width={600}
             height={400}
