@@ -71,6 +71,24 @@ export default function HomePage() {
             <footer className="text-blue-600 font-medium">— Sarah J., Type 2 Diabetes</footer>
           </blockquote>
         </div>
+        <div className="bg-green-100 rounded-xl p-8 mb-16">
+  <blockquote className="max-w-3xl mx-auto">
+    <p className="text-xl italic text-gray-700 mb-4">
+      "Tracking my meals and learning from the daily articles has made a real difference in how I manage my condition. It's like having a coach in my pocket."
+    </p>
+    <footer className="text-green-600 font-medium">— James R., Living with Type 1 Diabetes</footer>
+  </blockquote>
+</div>
+<div className="bg-purple-100 rounded-xl p-8 mb-16">
+  <blockquote className="max-w-3xl mx-auto">
+    <p className="text-xl italic text-gray-700 mb-4">
+      "The equipment tracker has taken the guesswork out of my routine. I always know when to reorder supplies, and it’s easy to log what I use. A total lifesaver!"
+    </p>
+    <footer className="text-purple-600 font-medium">— Lisa M., Insulin Pump User</footer>
+  </blockquote>
+</div>
+
+
 
         {/* Call to Action */}
         <div>

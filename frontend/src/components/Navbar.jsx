@@ -13,7 +13,7 @@ const Navbar = () => {
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo */}
         <div className="text-white text-2xl font-bold">
-          <Link href="/">My Diabetes Platform</Link>
+          <Link href="/"> Diabetes Health Hub</Link>
         </div>
 
         {/* Navigation Links */}
@@ -22,7 +22,11 @@ const Navbar = () => {
           <Link href="/article-list" className="hover:text-green-400">Articles</Link>
           <Link href="/contact" className="hover:text-green-400">Contact</Link>
           <Link href="/purchase" className="hover:text-green-400">Purchase</Link>
+          <Link href="/about" className="hover:text-green-400">About</Link>
+          
           <Link href="/cart" className="hover:text-green-400 relative">
+          
+          
             Cart
             {cartItems.length > 0 && (
               <span className="absolute -top-2 -right-3 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
