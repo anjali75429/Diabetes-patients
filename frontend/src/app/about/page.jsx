@@ -1,5 +1,4 @@
-'use client';
-import Image from 'next/image';
+import React from 'react';
 
 export default function PlatformDetails() {
   return (
@@ -8,8 +7,8 @@ export default function PlatformDetails() {
 
       <div className="flex flex-col md:flex-row gap-10 items-center">
         <div className="md:w-1/2">
-          <Image
-            src="/images/diabetes-platform.jpg" // Replace with your actual image path
+          <img
+            src="images\diabetic-platform.jpeg"
             alt="Diabetes management tools"
             width={600}
             height={400}

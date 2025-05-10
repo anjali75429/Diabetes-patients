@@ -67,6 +67,7 @@ export default function HomePage() {
             <p className="text-xl italic text-gray-700 mb-4">
               "This platform has been a game-changer for managing my diabetes. The food recommendations and articles have helped me make better daily choices."
             </p>
+            
             <footer className="text-blue-600 font-medium">— Sarah J., Type 2 Diabetes</footer>
           </blockquote>
         </div>
