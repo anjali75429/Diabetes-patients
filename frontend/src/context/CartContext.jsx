@@ -18,7 +18,14 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (item) => {
-    setCartItems((prev) => [...prev, item]);
+    setCartItems((prev) => {
+      // Check if the item already exists in the cart
+      const itemExists = prev.some((cartItem) => cartItem._id === item._id);
+      if (itemExists) {
+        return prev; // If item exists, don't add it again
+      }
+      return [...prev, item]; // Otherwise, add the item
+    });
   };
 
   const removeFromCart = (itemId) => {
