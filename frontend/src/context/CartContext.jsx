@@ -1,30 +1,35 @@
 'use client';
+
 import { createContext, useContext, useState, useEffect } from 'react';
 
-const CartContext = createContext();
+// Create context with default fallback (optional for better error messages)
+const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState(() => {
-    // Load cart items from localStorage on initialization
-    if (typeof window !== 'undefined') {
-      const storedCart = localStorage.getItem('cartItems');
-      return storedCart ? JSON.parse(storedCart) : [];
-    }
-    return [];
-  });
+  const [cartItems, setCartItems] = useState([]);
 
+  // Load cart items from localStorage only on the client
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cartItems');
+    if (storedCart) {
+      try {
+        setCartItems(JSON.parse(storedCart));
+      } catch (err) {
+        console.error('Failed to parse cart from localStorage:', err);
+        localStorage.removeItem('cartItems');
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 
   const addToCart = (item) => {
     setCartItems((prev) => {
-      // Check if the item already exists in the cart
       const itemExists = prev.some((cartItem) => cartItem._id === item._id);
-      if (itemExists) {
-        return prev; // If item exists, don't add it again
-      }
-      return [...prev, item]; // Otherwise, add the item
+      return itemExists ? prev : [...prev, item];
     });
   };
 
@@ -43,4 +48,11 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-export const useCart = () => useContext(CartContext);
+// Custom hook with fallback for missing provider
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context;
+};
