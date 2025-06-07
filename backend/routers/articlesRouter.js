@@ -16,10 +16,12 @@ router.get('/getall', async (req, res) => {
 
 
 // Add a new article
-router.post('/', async (req, res) => {
-  const { title, content, category } = req.body;
+router.post('/add', async (req, res) => {
+  const { title, content, category, description, image } = req.body;
+  console.log('POST request to add article:', req.body);
+  
   try {
-    const newArticle = new Article({ title, content, category });
+    const newArticle = new Article({ title, content, category, description , image });  
     await newArticle.save();
     res.status(201).json(newArticle);
   } catch (err) {

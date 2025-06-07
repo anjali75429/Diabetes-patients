@@ -14,21 +14,23 @@ router.get('/getall', async (req, res) => {
 });
 
 // Add new food item
-router.post('/', async (req, res) => {
-  const { name, title, content, category, image, price } = req.body;
+router.post('/add', async (req, res) => {
+  const { name, description, category, imageUrl, price } = req.body;
 
-  if (!name || !title || !content || !category || !image || price === undefined) {
-    return res.status(400).json({ message: 'All fields are required: name, title, content, category, image, price.' });
+  // Validate required fields
+  if (!name || !description || !category || !imageUrl || !price) {
+    return res.status(400).json({ 
+      message: 'All fields are required: name, description, category, imageUrl, price.' 
+    });
   }
 
   try {
     const newFood = new Food({
       name,
-      title,
-      content,
+      description,
       category,
-      image,
-      price
+      imageUrl,
+      price: Number(price)
     });
 
     await newFood.save();

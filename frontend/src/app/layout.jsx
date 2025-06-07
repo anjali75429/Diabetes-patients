@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
         <CartProvider>
           <Navbar />
           {children}
-          <RecipeSlider /> {/* New slider added here */}
+          {/* <RecipeSlider />  */}
           <Footer />
         </CartProvider>
       </body>

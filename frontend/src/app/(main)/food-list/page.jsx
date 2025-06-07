@@ -6,6 +6,7 @@ import { useCart } from '@/context/CartContext';
 const FoodList = () => {
   const [foods, setFoods] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -22,6 +23,16 @@ const FoodList = () => {
 
     fetchFoods();
   }, []);
+
+  const filteredFoods = foods.filter((item) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      item.title?.toLowerCase().includes(term) ||
+      item.name?.toLowerCase().includes(term) ||
+      item.description?.toLowerCase().includes(term) ||
+      item.content?.toLowerCase().includes(term)
+    );
+  });
 
   if (isLoading) {
     return (
@@ -40,13 +51,24 @@ const FoodList = () => {
         </p>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-8 flex justify-center">
+        <input
+          type="text"
+          placeholder="Search foods..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {foods.map((item) => (
+        {filteredFoods.map((item) => (
           <div key={item._id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-            {item.image && (
+            {item.imageUrl && (
               <div className="h-48 overflow-hidden">
                 <img
-                  src={item.image}
+                  src={item.imageUrl}
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />
@@ -62,7 +84,7 @@ const FoodList = () => {
                 </span>
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">
-                {item.title}
+                {item.title} {item.name}
               </h3>
               <div className="mb-4">
                 <p className="text-gray-600 line-clamp-3 mb-2">

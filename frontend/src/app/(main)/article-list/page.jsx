@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
@@ -6,14 +7,16 @@ import Link from 'next/link';
 const ArticleList = () => {
   const [articles, setArticles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         const res = await axios.get('http://localhost:5000/article/getall');
         setArticles(res.data);
-      } catch (error) {
-        console.error('Failed to fetch articles:', error);
+      } catch (err) {
+        console.error('Failed to fetch articles:', err);
+        setError('Unable to load articles. Please try again later.');
       } finally {
         setIsLoading(false);
       }
@@ -25,13 +28,22 @@ const ArticleList = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-green-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-center px-4">
+        <p className="text-red-600 text-lg font-medium">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-10">
+      {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-green-700 mb-4">Diabetes Care Articles</h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -39,40 +51,60 @@ const ArticleList = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* Article Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {articles.map((article) => (
-          <div key={article._id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-            {article.image && (
-              <div className="h-48 overflow-hidden">
-                <img
-                  src={article.image}
-                  alt={article.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+          <div
+            key={article._id}
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300"
+          >
+            <div className="h-48 bg-gray-100 overflow-hidden">
+              <img
+                src={article.image || '/images/article-placeholder.jpg'}
+                alt={article.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
             <div className="p-6">
-              <div className="flex justify-between items-start mb-2">
-                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                  {article.category}
+              {/* Meta info */}
+              <div className="flex justify-between items-center text-sm mb-3">
+                <span className="bg-green-100 text-green-800 font-medium px-2 py-1 rounded">
+                  {article.category || 'General'}
                 </span>
-                <span className="text-xs text-gray-500">
-                  {new Date(article.date).toLocaleDateString()}
+                <span className="text-gray-500">
+                  {new Date(article.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2">
+
+              {/* Title */}
+              <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
                 {article.title}
               </h3>
+
+              {/* Content preview */}
               <p className="text-gray-600 mb-4 line-clamp-3">
                 {article.content}
               </p>
-              <Link 
+
+              {/* Read more link */}
+              <Link
                 href={`/articles/${article._id}`}
-                className="text-green-600 hover:text-green-800 font-medium inline-flex items-center"
+                className="text-green-600 hover:text-green-800 font-semibold inline-flex items-center transition"
               >
                 Read more
-                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </Link>
             </div>

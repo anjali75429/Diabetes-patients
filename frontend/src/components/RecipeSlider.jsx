@@ -3,32 +3,32 @@
 const recipes = [
   {
     title: "Grilled chicken with quinoa salad",
-    image: "/images/food1.jpg",
+    image: "/images/GrilledChicken.jpeg",
     calories: "350 kcal per serving",
   },
   {
     title: "Avocado toast with boiled eggs",
-    image: "/images/food2.jpg",
+    image: "/images/Avocado toast with boiled eggs.jpg",
     calories: "280 kcal per serving",
   },
   {
     title: "Oats and mixed berry smoothie",
-    image: "/images/food3.jpg",
+    image: "/images/Oats and mixed berry smoothie.jpg",
     calories: "220 kcal per serving",
   },
   {
     title: "Low-carb zucchini pasta dish",
-    image: "/images/food4.jpg",
+    image: "/images/Low-carb zucchini pasta dish.jpg",
     calories: "190 kcal per serving",
   },
   {
     title: "Stir-fried tofu and veggies bowl",
-    image: "/images/food5.jpg",
+    image: "\images/stir-fried tofu and veggies bowl.jpg",
     calories: "300 kcal per serving",
   },
   {
     title: "Baked salmon with steamed greens",
-    image: "/images/food6.jpg",
+    image: "/images/Baked salmon with steamed greens.jpg",
     calories: "330 kcal per serving",
   },
 ];
