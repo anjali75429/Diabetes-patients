@@ -1,4 +1,3 @@
-// src/components/ArticleForm.jsx
 'use client';
 
 import React, { useState } from 'react';
@@ -9,12 +8,15 @@ const ArticleForm = () => {
     title: '',
     content: '',
     category: '',
+    description: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
+    setError('');
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -22,13 +24,15 @@ const ArticleForm = () => {
     e.preventDefault();
     setLoading(true);
     setSuccess('');
+    setError('');
+
     try {
       await axios.post('http://localhost:5000/api/articles', form);
       setSuccess('✅ Article added successfully!');
-      setForm({ title: '', content: '', category: '' });
-    } catch (error) {
-      console.error(error);
-      alert('Failed to add article');
+      setForm({ title: '', content: '', category: '', description: '' });
+    } catch (err) {
+      console.error(err);
+      setError('Failed to add article. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -47,6 +51,12 @@ const ArticleForm = () => {
         {success && (
           <div className="mb-4 text-green-600 font-semibold text-center">
             {success}
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 text-red-600 font-semibold text-center">
+            {error}
           </div>
         )}
 
@@ -79,6 +89,22 @@ const ArticleForm = () => {
             rows="5"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300"
             placeholder="Enter content"
+          ></textarea>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2" htmlFor="description">
+            Description
+          </label>
+          <textarea
+            name="description"
+            id="description"
+            value={form.description}
+            onChange={handleChange}
+            required
+            rows="3"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300"
+            placeholder="Enter brief description"
           ></textarea>
         </div>
 

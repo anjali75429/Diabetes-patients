@@ -32,16 +32,20 @@ const Signup = () => {
         },
 
         onSubmit: async (values) => {
-            console.log(values);
-
-            try {
-                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/user/add`, values)
-                console.log(res.status);
-                console.log(res.data);
-                toast.success('Account created successfully');
+            console.log(values);            try {
+                const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/users/register`, values)
+                console.log('Registration response:', res.data);
+                if (res.data.success) {
+                    toast.success('Account created successfully');
+                    // You can optionally redirect to login page here
+                    window.location.href = '/login';
+                } else {
+                    toast.error(res.data.message || 'Failed to create account');
+                }
             } catch (error) {
-                console.log(error);
-                toast.error('Something went wrong');
+                console.error('Registration error:', error);
+                const errorMessage = error.response?.data?.message || 'Something went wrong';
+                toast.error(errorMessage);
             }
             
         },

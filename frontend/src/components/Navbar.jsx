@@ -1,77 +1,117 @@
 'use client';
 
-import Link from 'next/link';  // Make sure this import is here!
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useCart } from '@/context/CartContext';
+import {
+  HomeIcon,
+  UserPlusIcon,
+  ArrowRightOnRectangleIcon,
+  InformationCircleIcon,
+  PhoneIcon,
+  DocumentTextIcon,
+  ShoppingCartIcon,
+  UserCircleIcon,
+} from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/article-list', label: 'Articles' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/purchase', label: 'Purchase' },
-  { href: '/about', label: 'About Us' },
-  { href: '/cart', label: 'Cart' },
-];
+const getNavLinks = (isAuthenticated, user) => {
+  const baseLinks = [
+    { href: '/', label: 'Home', icon: HomeIcon },
+    { href: '/article-list', label: 'Articles', icon: DocumentTextIcon },
+    { href: '/contact', label: 'Contact', icon: PhoneIcon },
+    // Removed "Purchase" link from navigation menu
+    // { href: '/purchase', label: 'Purchase' },
+    { href: '/about', label: 'About Us', icon: InformationCircleIcon },
+  ];
 
-const Navbar = () => {
-  const { cartItems } = useCart();
+  const authLinks = isAuthenticated
+    ? [
+        { href: '/user/cart', label: 'Cart', icon: ShoppingCartIcon },
+        { 
+          href: '#', 
+          label: user?.name || 'Profile', 
+          icon: UserCircleIcon 
+        },
+        { 
+          href: '#', 
+          label: 'Logout', 
+          icon: ArrowRightOnRectangleIcon, 
+          isLogout: true 
+        },
+      ]
+    : [
+        { href: '/signup', label: 'Sign Up', icon: UserPlusIcon },
+        { href: '/login', label: 'Login', icon: ArrowRightOnRectangleIcon },
+      ];
+
+  return [...baseLinks, ...authLinks];
+};
+
+export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navLinks = getNavLinks(!!user, user);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   return (
-    <nav className="bg-gray-800 p-4 shadow-md">
-      {/* Top nav bar content (logo, nav links, menu button) */}
-      <div className="container mx-auto flex justify-between items-center">
-        {/* Logo + App Name */}
-        <Link href="/" className="flex items-center space-x-2">
-          <img
-            src="/images/logo.jpg"
-            alt="Logo"
-            className="h-12 w-12 md:h-16 md:w-16 object-contain rounded-full"
-          />
-          <span className="text-white text-xl md:text-2xl font-bold">
-            Diabetes Health Hub
-          </span>
-        </Link>
+    <nav className="bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo/Home Link */}
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/images/logo.jpg"
+              alt="Diabetes Health Hub Logo"
+              width={60}
+              height={60}
+              className="rounded-full bg-white"
+              priority
+            />
+            <span className="text-2xl font-bold tracking-tight">
+              Diabetes Health Hub
+            </span>
+          </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8 text-white items-center">
-          {navLinks.map(({ href, label }) => (
-            <Link key={href} href={href} className="hover:text-green-400 relative">
-              {label}
-              {label === 'Cart' && mounted && cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-3 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItems.length}
-                </span>
-              )}
-            </Link>
-          ))}
-        </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex space-x-8">
+            {navLinks.map((link) => (
+              link.isLogout ? (
+                <button
+                  key="logout"
+                  onClick={logout}
+                  className="hover:text-gray-200 transition-colors font-medium flex items-center gap-1 cursor-pointer"
+                >
+                  {link.icon && <link.icon className="h-5 w-5" />}
+                  {link.label}
+                </button>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="hover:text-gray-200 transition-colors font-medium flex items-center gap-1"
+                >
+                  {link.icon && <link.icon className="h-5 w-5" />}
+                  {link.label}
+                </Link>
+              )
+            ))}
+          </div>
 
-        {/* Desktop Auth Buttons */}
-        <div className="hidden md:flex space-x-4">
-          <Link href="/login" className="text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Login</Link>
-          <Link href="/signup" className="text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Signup</Link>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
+          {/* Mobile Menu Button */}
           <button
+            className="md:hidden text-white"
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-white focus:outline-none"
-            aria-label="Toggle mobile menu"
-            aria-expanded={menuOpen}
           >
             <svg
-              className="w-6 h-6"
+              className="h-6 w-6"
               fill="none"
-              stroke="currentColor"
               viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+              stroke="currentColor"
             >
               <path
                 strokeLinecap="round"
@@ -82,28 +122,36 @@ const Navbar = () => {
             </svg>
           </button>
         </div>
-      </div> {/* End of container */}
 
-      {/* Mobile Dropdown Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-gray-700 text-white px-4 pt-4 pb-2 space-y-3">
-          {navLinks.map(({ href, label }) => (
-            <Link key={href} href={href} className="block hover:text-green-400 relative">
-              {label}
-              {label === 'Cart' && mounted && cartItems.length > 0 && (
-                <span className="absolute top-0 left-20 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItems.length}
-                </span>
-              )}
-            </Link>
-          ))}
-          <hr className="border-gray-600" />
-          <Link href="/login" className="block text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Login</Link>
-          <Link href="/signup" className="block text-white bg-green-600 px-4 py-2 rounded hover:bg-green-700">Signup</Link>
-        </div>
-      )}
+        {/* Mobile Navigation */}
+        {menuOpen && (
+          <div className="md:hidden py-4">
+            {navLinks.map((link) => (
+              link.isLogout ? (
+                <button
+                  key="logout"
+                  onClick={() => {
+                    logout();
+                    setMenuOpen(false);
+                  }}
+                  className="block w-full text-left py-2 hover:text-gray-200 transition-colors"
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block py-2 hover:text-gray-200 transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              )
+            ))}
+          </div>
+        )}
+      </div>
     </nav>
   );
-};
-
-export default Navbar;
+}

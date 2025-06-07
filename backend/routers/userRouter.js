@@ -1,62 +1,172 @@
 const express = require('express');
 const router = express.Router();
-const Model = require('../models/UserModel');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const User = require('../models/userModel');
+const auth = require('../middleware/authMiddleware');
+const asyncHandler = require('express-async-handler');
+const rateLimit = require('express-rate-limit');
 
-// Add a new user
-router.post('/add', (req, res) => {
-  new Model(req.body)
-    .save()
-    .then(result => res.status(200).json(result))
-    .catch(err => res.status(500).json({ error: err.message }));
+// Rate limiting configuration
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: { 
+    success: false, 
+    message: 'Too many attempts, please try again after 15 minutes' 
+  },
+  standardHeaders: true,
+  legacyHeaders: false
 });
 
-// Get user by email
-router.get('/getbyemail/:email', (req, res) => {
-  Model.findOne({ email: req.params.email })
-    .then(user => {
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json(user);
-    })
-    .catch(err => res.status(500).json({ error: err.message }));
-});
+// @desc    Register new user
+// @route   POST /api/users/register
+// @access  Public
+router.post('/register', authLimiter, asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+  console.log('Registration request received:', { name, email });
 
-// Get all users
-router.get('/getall', (req, res) => {
-  Model.find()
-    .then(result => res.status(200).json(result))
-    .catch(err => res.status(500).json({ error: err.message }));
-});
+  // Validation
+  if (!name || !email || !password) {
+    res.status(400);
+    throw new Error('Please provide all required fields');
+  }
 
-// Get user by ID
-router.get('/getbyid/:id', (req, res) => {
-  Model.findById(req.params.id)
-    .then(user => {
-      if (!user) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json(user);
-    })
-    .catch(err => res.status(500).json({ error: err.message }));
-});
+  // Check existing user
+  const userExists = await User.findOne({ email: email.toLowerCase() });
+  if (userExists) {
+    res.status(409);
+    throw new Error('Email is already registered');
+  }
 
-// Update user by ID
-router.put('/update/:id', (req, res) => {
-  Model.findByIdAndUpdate(req.params.id, req.body, { new: true })
-    .then(updated => {
-      if (!updated) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json(updated);
-    })
-    .catch(err => res.status(500).json({ error: err.message }));
-});
+  // Create user
+  const user = await User.create({
+    name: name.trim(),
+    email: email.toLowerCase(),
+    password,
+    lastLogin: Date.now()
+  });
 
-// Delete user by ID
-router.delete('/delete/:id', (req, res) => {
-  Model.findByIdAndDelete(req.params.id)
-    .then(deleted => {
-      if (!deleted) return res.status(404).json({ message: 'User not found' });
-      res.status(200).json({ message: 'User deleted successfully', deleted });
-    })
-    .catch(err => res.status(500).json({ error: err.message }));
-});
+  if (user) {
+    res.status(201).json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token: user.getSignedToken()
+      }
+    });
+  } else {
+    res.status(400);
+    throw new Error('Invalid user data');
+  }
+}));
+
+// @desc    Login user
+// @route   POST /api/users/login
+// @access  Public
+router.post('/login', authLimiter, asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validation
+  if (!email || !password) {
+    res.status(400);
+    throw new Error('Please provide email and password');
+  }
+
+  // Check user exists
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  if (!user) {
+    res.status(401);
+    throw new Error('Invalid credentials');
+  }
+
+  // Verify password
+  const isMatch = await user.matchPassword(password);
+  if (!isMatch) {
+    res.status(401);
+    throw new Error('Invalid credentials');
+  }
+
+  // Update last login
+  user.lastLogin = Date.now();
+  await user.save();
+
+  res.json({
+    success: true,
+    data: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: user.getSignedToken()
+    }
+  });
+}));
+
+// @desc    Get current user profile
+// @route   GET /api/users/profile
+// @access  Private
+router.get('/profile', auth, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  res.json({
+    success: true,
+    data: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      lastLogin: user.lastLogin
+    }
+  });
+}));
+
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+router.put('/profile', auth, asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  // Update fields if provided
+  user.name = req.body.name || user.name;
+  if (req.body.email) {
+    const emailExists = await User.findOne({ 
+      email: req.body.email.toLowerCase(),
+      _id: { $ne: user._id }
+    });
+    if (emailExists) {
+      res.status(400);
+      throw new Error('Email already in use');
+    }
+    user.email = req.body.email.toLowerCase();
+  }
+  if (req.body.password) {
+    user.password = req.body.password;
+  }
+
+  const updatedUser = await user.save();
+
+  res.json({
+    success: true,
+    data: {
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      token: updatedUser.getSignedToken()
+    }
+  });
+}));
 
 module.exports = router;

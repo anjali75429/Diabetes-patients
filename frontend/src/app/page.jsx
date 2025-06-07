@@ -1,25 +1,71 @@
-import Link from "next/link";
+'use client';
+
+import Link from 'next/link';
 import {
   HeartIcon,
   DevicePhoneMobileIcon,
   BookOpenIcon,
-} from "@heroicons/react/24/solid";
-import Image from "next/image";
-import Head from "next/head";
+} from '@heroicons/react/24/solid';
+import Image from 'next/image';
+import Head from 'next/head';
+import { useState } from 'react';
+import RecipeSlider from '@/components/RecipeSlider';
 
 export default function HomePage() {
+  const features = [
+    {
+      Icon: HeartIcon,
+      title: 'Health Monitoring',
+      text: 'Track your blood sugar levels and health metrics with easy-to-use tools.',
+      color: 'text-red-600' // Changed from text-indigo-500
+    },
+    {
+      Icon: DevicePhoneMobileIcon,
+      title: 'Smart Equipment',
+      text: 'Access modern diabetes care equipment and supplies for better management.',
+      color: 'text-blue-500'
+    },
+    {
+      Icon: BookOpenIcon,
+      title: 'Educational Resources',
+      text: 'Learn from our comprehensive collection of articles and guides.',
+      color: 'text-green-500'
+    },
+  ];
+
+  const testimonials = [
+    {
+      quote:
+        'This platform has transformed how I manage my diabetes. The food recommendations are incredibly helpful!',
+      name: 'Sarah Johnson',
+      color: 'blue',
+    },
+    {
+      quote:
+        'The equipment suggestions and educational resources have made a real difference in my daily routine.',
+      name: 'Michael Chen',
+      color: 'green',
+    },
+    {
+      quote:
+        'I feel more confident managing my diabetes thanks to the comprehensive information provided here.',
+      name: 'Emma Davis',
+      color: 'purple',
+    },
+  ];
+
   const colorClasses = {
     blue: {
-      bg: "bg-blue-100",
-      text: "text-blue-600",
+      bg: 'bg-blue-100',
+      text: 'text-blue-600',
     },
     green: {
-      bg: "bg-green-100",
-      text: "text-green-600",
+      bg: 'bg-green-100',
+      text: 'text-green-600',
     },
     purple: {
-      bg: "bg-purple-100",
-      text: "text-purple-600",
+      bg: 'bg-purple-100',
+      text: 'text-purple-600',
     },
   };
 
@@ -47,7 +93,7 @@ export default function HomePage() {
             src="/images/diabetic-main.jpeg"
             alt="Decorative image showing diabetes care"
             fill
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: 'cover' }}
             className="opacity-20"
             priority
           />
@@ -68,13 +114,12 @@ export default function HomePage() {
           </div>
 
           {/* Hero Text */}
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-6 shadow-lg bg-white bg-opacity-60 inline-block px-4 py-2 rounded-xl backdrop-blur-sm">
-            Welcome to{" "}
-            <span className="text-blue-600">Diabetes Care Platform</span>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-purple-600 mb-6 shadow-lg bg-white bg-opacity-60 inline-block px-4 py-2 rounded-xl backdrop-blur-sm">
+            Welcome to Diabetes Health Hub
           </h1>
           <p className="text-lg sm:text-xl text-gray-700 mb-10">
-            Your all-in-one solution for managing diabetes through nutrition,
-            smart equipment, and expert education.
+            Your all-in-one solution for managing diabetes through nutrition, smart
+            equipment, and expert education.
           </p>
 
           {/* Navigation Buttons */}
@@ -101,28 +146,12 @@ export default function HomePage() {
 
           {/* Features Section */}
           <div className="grid md:grid-cols-3 gap-8 mb-20">
-            {[
-              {
-                Icon: HeartIcon,
-                title: "Nutrition Guide",
-                text: "Discover diabetes-friendly foods and manage your diet more effectively.",
-              },
-              {
-                Icon: DevicePhoneMobileIcon,
-                title: "Essential Equipment",
-                text: "Stay on track with devices and tools to monitor your condition.",
-              },
-              {
-                Icon: BookOpenIcon,
-                title: "Educational Resources",
-                text: "Learn from trusted experts and stay informed on diabetes care.",
-              },
-            ].map(({ Icon, title, text }) => (
+            {features.map(({ Icon, title, text, color }) => (
               <div
                 key={title}
                 className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transform transition-transform hover:-translate-y-1"
               >
-                <Icon className="w-12 h-12 mx-auto text-indigo-500 mb-4" />
+                <Icon className={`w-12 h-12 mx-auto ${color} mb-4`} />
                 <h3 className="text-xl font-semibold mb-2">{title}</h3>
                 <p className="text-gray-600">{text}</p>
               </div>
@@ -131,33 +160,14 @@ export default function HomePage() {
 
           {/* Testimonials Section */}
           <section className="space-y-12 mb-20">
-            {[
-              {
-                quote:
-                  "This platform has been a game-changer for managing my diabetes. The food recommendations and articles have helped me make better daily choices.",
-                name: "Sarah J., Type 2 Diabetes",
-                color: "blue",
-              },
-              {
-                quote:
-                  "Tracking my meals and learning from the daily articles has made a real difference in how I manage my condition.",
-                name: "James R., Living with Type 1 Diabetes",
-                color: "green",
-              },
-              {
-                quote:
-                  "The equipment tracker has taken the guesswork out of my routine. It’s like having a coach in my pocket.",
-                name: "Lisa M., Insulin Pump User",
-                color: "purple",
-              },
-            ].map(({ quote, name, color }) => {
+            {testimonials.map(({ quote, name, color }) => {
               const { bg, text } = colorClasses[color] || {};
               return (
                 <blockquote
                   key={name}
                   className={`${bg} rounded-xl p-6 sm:p-8 shadow-md transition-all duration-300 transform hover:scale-105`}
                 >
-                  <p className="text-lg italic text-gray-700 mb-3">“{quote}”</p>
+                  <p className="text-lg italic text-gray-700 mb-3">"{quote}"</p>
                   <footer className={`${text} font-medium`}>— {name}</footer>
                 </blockquote>
               );
@@ -179,9 +189,10 @@ export default function HomePage() {
               Get Started Today
             </Link>
           </div>
-          
         </div>
       </div>
+
+      <RecipeSlider />
     </>
   );
 }

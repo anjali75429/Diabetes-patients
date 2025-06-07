@@ -15,12 +15,36 @@ router.get('/getall', async (req, res) => {
 
 // Add new order
 router.post('/add', async (req, res) => {
-  const { userId, items, totalPrice, status } = req.body;
+  const { userId, items, totalPrice, status, shippingInfo } = req.body;
   try {
-    const newOrder = new Order({ userId, items, totalPrice, status });
+    // Validate required fields
+    if (!userId || !items || !items.length || !totalPrice || !shippingInfo) {
+      return res.status(400).json({ 
+        message: 'Missing required fields. Please provide userId, items, totalPrice, and shippingInfo' 
+      });
+    }
+
+    // Validate items structure
+    for (const item of items) {
+      if (!item.itemId || !item.itemType || !item.quantity) {
+        return res.status(400).json({ 
+          message: 'Invalid item structure. Each item must have itemId, itemType, and quantity' 
+        });
+      }
+    }
+
+    const newOrder = new Order({
+      userId,
+      items,
+      totalPrice,
+      status: status || 'pending',
+      shippingInfo
+    });
+
     await newOrder.save();
     res.status(201).json(newOrder);
   } catch (err) {
+    console.error('Order creation error:', err);
     res.status(400).json({ message: err.message });
   }
 });

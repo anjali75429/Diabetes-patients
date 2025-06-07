@@ -12,7 +12,8 @@ const ArticleList = () => {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/article/getall');
+        const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const res = await axios.get(`${API}/api/articles`);
         setArticles(res.data);
       } catch (err) {
         console.error('Failed to fetch articles:', err);
@@ -61,7 +62,7 @@ const ArticleList = () => {
             <div className="h-48 bg-gray-100 overflow-hidden">
               <img
                 src={article.image || '/images/article-placeholder.jpg'}
-                alt={article.title}
+                alt={article.title || 'Article Image'}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -73,22 +74,24 @@ const ArticleList = () => {
                   {article.category || 'General'}
                 </span>
                 <span className="text-gray-500">
-                  {new Date(article.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+                  {article.createdAt
+                    ? new Date(article.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : 'Date unknown'}
                 </span>
               </div>
 
               {/* Title */}
               <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
-                {article.title}
+                {article.title || 'Untitled'}
               </h3>
 
               {/* Content preview */}
               <p className="text-gray-600 mb-4 line-clamp-3">
-                {article.content}
+                {article.content?.slice(0, 150) || 'No content available.'}
               </p>
 
               {/* Read more link */}

@@ -1,74 +1,69 @@
 const express = require('express');
 const router = express.Router();
-const Food = require('../models/foodModel'); // Make sure this model exists
+const Food = require('../models/foodModel');
 
-// Get all food items
+// GET all food items - GET /api/food/getall
 router.get('/getall', async (req, res) => {
-  console.log('GET request for all food items');
   try {
     const foodItems = await Food.find();
-    res.json(foodItems);
+    res.status(200).json(foodItems);
   } catch (err) {
+    console.error('Error fetching food items:', err);
     res.status(500).json({ message: err.message });
   }
 });
 
-// Add new food item
-router.post('/add', async (req, res) => {
-  const { name, description, category, imageUrl, price } = req.body;
-
-  // Validate required fields
-  if (!name || !description || !category || !imageUrl || !price) {
-    return res.status(400).json({ 
-      message: 'All fields are required: name, description, category, imageUrl, price.' 
-    });
-  }
-
-  try {
-    const newFood = new Food({
-      name,
-      description,
-      category,
-      imageUrl,
-      price: Number(price)
-    });
-
-    await newFood.save();
-    res.status(201).json(newFood);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// Get a single food item
+// GET single food item - GET /api/food/:id
 router.get('/:id', async (req, res) => {
   try {
     const foodItem = await Food.findById(req.params.id);
     if (!foodItem) return res.status(404).json({ message: 'Food item not found' });
-    res.json(foodItem);
+    res.status(200).json(foodItem);
   } catch (err) {
+    console.error('Error fetching food item:', err);
     res.status(500).json({ message: err.message });
   }
 });
 
-// Update food item
-router.put('/:id', async (req, res) => {
+// POST create new food item - POST /api/food
+router.post('/', async (req, res) => {
+  const { name, description, category, imageUrl, price } = req.body;
+  if (!name || !description || !category || !imageUrl || price === undefined) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
   try {
-    const updatedFood = await Food.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedFood) return res.status(404).json({ message: 'Food item not found' });
-    res.json(updatedFood);
+    const newFood = new Food({ name, description, category, imageUrl, price });
+    await newFood.save();
+    res.status(201).json(newFood);
   } catch (err) {
+    console.error('Error adding food:', err);
     res.status(400).json({ message: err.message });
   }
 });
 
-// Delete food item
+// PUT update food item - PUT /api/food/:id
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedFood = await Food.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!updatedFood) return res.status(404).json({ message: 'Food item not found' });
+    res.status(200).json(updatedFood);
+  } catch (err) {
+    console.error('Error updating food item:', err);
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// DELETE food item - DELETE /api/food/:id
 router.delete('/:id', async (req, res) => {
   try {
     const deletedFood = await Food.findByIdAndDelete(req.params.id);
     if (!deletedFood) return res.status(404).json({ message: 'Food item not found' });
-    res.json({ message: 'Food item deleted successfully' });
+    res.status(200).json({ message: 'Food item deleted successfully' });
   } catch (err) {
+    console.error('Error deleting food item:', err);
     res.status(500).json({ message: err.message });
   }
 });

@@ -1,114 +1,151 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import { Heart, HeartOff, List, Grid } from 'lucide-react';
 
 const FoodList = () => {
-  const [foods, setFoods] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [foodItems, setFoodItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [view, setView] = useState('grid'); // 'grid' or 'list'
+  const [sortOrder, setSortOrder] = useState('asc');
   const { addToCart } = useCart();
+  const { user, token } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchFoods = async () => {
+    const fetchFood = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/food/getall');
-        setFoods(res.data);
-      } catch (error) {
-        console.error('Failed to fetch food:', error);
+        const response = await axios.get('http://localhost:5000/api/food/getall');
+        setFoodItems(response.data);
+        setFilteredItems(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch food items:', err);
+        setError('Failed to load food items. Please try again later.');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchFoods();
+    fetchFood();
   }, []);
 
-  const filteredFoods = foods.filter((item) => {
-    const term = searchTerm.toLowerCase();
-    return (
-      item.title?.toLowerCase().includes(term) ||
-      item.name?.toLowerCase().includes(term) ||
-      item.description?.toLowerCase().includes(term) ||
-      item.content?.toLowerCase().includes(term)
-    );
-  });
+  const handleAddToCart = async (item) => {
+    if (!user || !token) {
+      router.push('/login');
+      return;
+    }
 
-  if (isLoading) {
+    try {
+      await addToCart(item, 'Food');
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+    }
+  };
+
+  const toggleFavorite = (id) => {
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
+    );
+  };
+
+  const handleSort = () => {
+    const sorted = [...filteredItems].sort((a, b) => {
+      return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+    });
+    setFilteredItems(sorted);
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
+  if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      <div className="container mx-auto p-6">
+        <p className="text-center text-gray-600">Loading food items...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <p className="text-center text-red-600">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-green-700 mb-4">Diabetes-Friendly Foods</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Nutritious food options that help maintain healthy blood sugar levels.
-        </p>
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+        Diabetic-Friendly Food
+      </h1>
+
+      {/* Controls */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="space-x-2">
+          <button
+            onClick={() => setView('grid')}
+            className={`p-2 rounded ${view === 'grid' ? 'bg-gray-200' : ''}`}
+          >
+            <Grid size={18} />
+          </button>
+          <button
+            onClick={() => setView('list')}
+            className={`p-2 rounded ${view === 'list' ? 'bg-gray-200' : ''}`}
+          >
+            <List size={18} />
+          </button>
+        </div>
+        <button
+          onClick={handleSort}
+          className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
+        >
+          Sort by Price ({sortOrder === 'asc' ? 'Low → High' : 'High → Low'})
+        </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="mb-8 flex justify-center">
-        <input
-          type="text"
-          placeholder="Search foods..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredFoods.map((item) => (
-          <div key={item._id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+      {/* Food Items */}
+      <div className={`${view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-6'}`}>
+        {filteredItems.map((item) => (
+          <div
+            key={item._id}
+            className={`bg-white rounded-lg shadow-md transition hover:shadow-lg overflow-hidden ${
+              view === 'list' ? 'flex' : ''
+            }`}
+          >
             {item.imageUrl && (
-              <div className="h-48 overflow-hidden">
+              <div className={`relative ${view === 'list' ? 'w-1/3' : 'h-48 w-full'}`}>
                 <img
                   src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
+                  alt={item.name}
+                  className={`object-cover ${view === 'list' ? 'h-full w-full' : 'absolute inset-0 w-full h-full'}`}
                 />
               </div>
             )}
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-2">
-                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                  {item.category}
-                </span>
-                <span className="text-xs text-gray-500">
-                  Glycemic Index: {item.glycemicIndex || 'N/A'}
-                </span>
+            <div className="p-4 flex flex-col justify-between w-full">
+              <div>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
+                  <button onClick={() => toggleFavorite(item._id)} className="text-red-500">
+                    {favorites.includes(item._id) ? <Heart fill="currentColor" /> : <HeartOff />}
+                  </button>
+                </div>
+                <p className="text-gray-600 line-clamp-3 text-sm">{item.description}</p>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">
-                {item.title} {item.name}
-              </h3>
-              <div className="mb-4">
-                <p className="text-gray-600 line-clamp-3 mb-2">
-                  {item.description || item.content}
-                </p>
-                {item.nutritionalInfo && (
-                  <div className="text-sm text-gray-500">
-                    <p><strong>Calories:</strong> {item.nutritionalInfo.calories || 'N/A'}</p>
-                    <p><strong>Carbs:</strong> {item.nutritionalInfo.carbs || 'N/A'}g</p>
-                  </div>
-                )}
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">
-                  Added: {new Date(item.date).toLocaleDateString()}
-                </span>
+
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-base font-medium text-gray-900">₹{item.price}</span>
                 <button
-                  onClick={() => addToCart(item)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center"
+                  onClick={() => handleAddToCart(item)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-sm transition"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
-                  Add to Plan
+                  {user && token ? 'Add to Cart' : 'Login to Add'}
                 </button>
               </div>
             </div>

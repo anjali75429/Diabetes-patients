@@ -1,7 +1,43 @@
-import Navbar from '@/components/Navbar';
-import React from 'react'
+'use client';
+
+import React, { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const Login = () => {
+    const { login } = useAuth();
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+    const [loading, setLoading] = useState(false);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            const result = await login(formData.email, formData.password);
+            if (result.success) {
+                toast.success('Logged in successfully!');
+            } else {
+                toast.error(result.message);
+            }
+        } catch (error) {
+            toast.error('Failed to login. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div>
             <div className="bg-white py-6 sm:py-8 lg:py-12">
@@ -9,7 +45,7 @@ const Login = () => {
                     <h2 className="mb-4 text-center text-2xl font-bold text-gray-800 md:mb-8 lg:text-3xl">
                         Login
                     </h2>
-                    <form className="mx-auto max-w-lg rounded-lg border">
+                    <form onSubmit={handleSubmit} className="mx-auto max-w-lg rounded-lg border">
                         <div className="flex flex-col gap-4 p-4 md:p-8">
                             <div>
                                 <label
@@ -19,7 +55,11 @@ const Login = () => {
                                     Email
                                 </label>
                                 <input
+                                    type="email"
                                     name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
                                     className="w-full rounded border bg-gray-50 px-3 py-2 text-gray-800 outline-none ring-indigo-300 transition duration-100 focus:ring"
                                 />
                             </div>
@@ -31,12 +71,20 @@ const Login = () => {
                                     Password
                                 </label>
                                 <input
+                                    type="password"
                                     name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
                                     className="w-full rounded border bg-gray-50 px-3 py-2 text-gray-800 outline-none ring-indigo-300 transition duration-100 focus:ring"
                                 />
                             </div>
-                            <button className="block rounded-lg bg-gray-800 px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-gray-300 transition duration-100 hover:bg-gray-700 focus-visible:ring active:bg-gray-600 md:text-base">
-                                Log in
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="block rounded-lg bg-gray-800 px-8 py-3 text-center text-sm font-semibold text-white outline-none ring-gray-300 transition duration-100 hover:bg-gray-700 focus-visible:ring active:bg-gray-600 md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? 'Logging in...' : 'Log in'}
                             </button>
                             <div className="relative flex items-center justify-center">
                                 <span className="absolute inset-x-0 h-px bg-gray-300" />
